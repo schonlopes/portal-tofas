@@ -30,7 +30,17 @@ async function loadPackages(){
       const card=document.createElement('article');card.className='packageCard';
       const title=document.createElement('strong');title.textContent=`${seriesLabel(p.serie)} · ${p.tipo==='Certificados'?'Certificados':'Relatórios'}`;
       const detail=document.createElement('span');detail.className='muted';detail.textContent=`${Number(p.pdfs||0).toLocaleString('pt-BR')} PDF(s) · ${(Number(p.bytes||0)/1048576).toFixed(1).replace('.',',')} MiB`;
-      const fileId=p.url.match(/^https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\/view$/)?.[1];if(!fileId)continue;const link=document.createElement('a');link.className='downloadLink';link.textContent='Baixar pacote ZIP ↓';link.href=`https://drive.google.com/uc?export=download&id=${encodeURIComponent(fileId)}`;link.target='_blank';link.rel='noopener noreferrer';
+      const fileId=p.url.match(/^https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\/view$/)?.[1];
+      if(!fileId)continue;
+      // O endpoint /uc?export=download pode devolver 403 para arquivos privados,
+      // mesmo quando o usuário consegue abri-los no Google Drive.
+      // Abrir o link oficial preserva a verificação de permissões do Drive.
+      const link=document.createElement('a');
+      link.className='downloadLink';
+      link.textContent='Abrir pacote no Drive ↗';
+      link.href=p.url;
+      link.target='_blank';
+      link.rel='noopener noreferrer';
       card.append(title,detail,link);box.append(card);
     }
   }catch(e){console.error(e);hint.textContent='Não foi possível carregar os pacotes. Confira as regras do Firestore.';}
